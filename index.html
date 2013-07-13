@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+	<title>Curvy Friends</title>
+	<script>
+		function fetchLoginPage() {
+			var xmlhttp = new XMLHttpRequest();
+
+			xmlhttp.onreadystatechange = function() {
+				if (xmlhttp.readyState ==4 && xmlhttp.status == 200) {
+					document.getElementById("content").innerHTML=xmlhttp.responseText;
+				}
+			}
+
+			xmlhttp.open("GET", "/test1", true);
+			xmlhttp.send();
+		}
+
+		function fetchContentPage() {
+			var xmlhttp = new XMLHttpRequest();
+
+			xmlhttp.onreadystatechange = function() {
+				if (xmlhttp.readyState ==4 && xmlhttp.status == 200) {
+					document.getElementById("content").innerHTML=xmlhttp.responseText;
+				}
+			}
+
+			xmlhttp.open("GET", "/test2", true);
+			xmlhttp.send();
+		}
+	</script>
+</head>
+<body>
+		<div>
+			<button id="login">Login</button>
+			<button id="logout">Logout</button>
+		</div>
+	<span id="fb-root"></span>
+
+	<script src="http://connect.facebook.net/en_US/all.js"></script>
+	<script>
+		FB.init({ appId:'168751213286274' });
+		FB.getLoginStatus(function(response) {
+			if (response.status === 'connected') {
+				console.log('logged on');
+				fetchContentPage();
+			    var uid = response.authResponse.userID;
+			    var accessToken = response.authResponse.accessToken;
+			} else if (response.status === 'not_authorized') {
+				console.log('Not authorized');
+			} else {
+				console.log('Not logged on');
+			}
+		});
+
+		document.getElementById('login').addEventListener('click', function() {
+			FB.login(function(response) {
+				if (response.authResponse) {
+					FB.api('/me', function(response) {
+						console.log(response);
+						fetchContentPage();
+					});
+				} else {
+					console.log('Cancelled login');
+				}
+			})
+		});
+
+		document.getElementById('logout').addEventListener('click', function() {
+			FB.logout(function(response) {
+				console.log("User logged out");
+				fetchLoginPage();
+			});
+		});
+	</script>
+	<div id="content">test page one</div>
+</body>
+</html>
