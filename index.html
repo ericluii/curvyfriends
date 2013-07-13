@@ -16,7 +16,7 @@
 			xmlhttp.send();
 		}
 
-		function fetchContentPage() {
+		function fetchContentPage(access_token) {
 			var xmlhttp = new XMLHttpRequest();
 
 			xmlhttp.onreadystatechange = function() {
@@ -25,7 +25,7 @@
 				}
 			}
 
-			xmlhttp.open("GET", "/test2", true);
+			xmlhttp.open("GET", "/facebookData/" + access_token, true);
 			xmlhttp.send();
 		}
 	</script>
@@ -39,13 +39,17 @@
 
 	<script src="http://connect.facebook.net/en_US/all.js"></script>
 	<script>
-		FB.init({ appId:'168751213286274' });
+		FB.init({
+			appId      : '168751213286274', // App ID
+			status     : true, // check login status
+			cookie     : true, // enable cookies to allow the server to access the session
+			xfbml      : true  // parse XFBML
+	  	});
+
 		FB.getLoginStatus(function(response) {
 			if (response.status === 'connected') {
 				console.log('logged on');
-				fetchContentPage();
-			    var uid = response.authResponse.userID;
-			    var accessToken = response.authResponse.accessToken;
+				fetchContentPage(response.authResponse.accessToken);
 			} else if (response.status === 'not_authorized') {
 				console.log('Not authorized');
 			} else {
@@ -56,14 +60,11 @@
 		document.getElementById('login').addEventListener('click', function() {
 			FB.login(function(response) {
 				if (response.authResponse) {
-					FB.api('/me', function(response) {
-						console.log(response);
-						fetchContentPage();
-					});
+					fetchContentPage(response.authResponse.accessToken);
 				} else {
 					console.log('Cancelled login');
 				}
-			})
+			}, {scope: 'read_friendlists,friends_status,read_stream,user_relationships,user_status,friends_relationships'})
 		});
 
 		document.getElementById('logout').addEventListener('click', function() {

@@ -11,6 +11,7 @@ app.get('/test1', function(request, response) {
 app.get('/test2', function(request, response) {
 	response.send('test page two');
 });
+app.get('/facebookData/:access_token', facebook.facebookData);
 
 var port = process.env.PORT || 5000;
 app.listen(port, function() {
