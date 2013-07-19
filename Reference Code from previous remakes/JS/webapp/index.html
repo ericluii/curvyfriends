@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:fb="http://www.facebook.com/2008/fbml">
+    
+    <head>
+        <meta charset="utf-8">
+        <title>Curvy Friends</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <!-- Le styles -->
+        <link href="../resources/plugin/bootstrap/css/bootstrap.css" rel="stylesheet">
+        <style type="text/css">
+            body {
+                padding-top: 10px;
+                padding-bottom: 40px;
+            }
+            .sidebar-nav {
+                padding: 9px 0;
+            }
+            .loading {
+                opacity: 0.8;
+                background: rgba(255, 255, 255, 0.5);
+                width: 100%;
+                height: 100%;
+                z-index: 10;
+                top: 0;
+                left: 0;
+                position: fixed;
+            }
+            div.pos_fixed {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 50px;
+                height: 300px;
+                background: rgba(179, 236, 255, 0.5);
+                z-index: 1;
+            }
+        </style>
+        <link href="../resources/plugin/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+        <link href='http://fonts.googleapis.com/css?family=Cedarville+Cursive' rel='stylesheet' type='text/css'>
+    </head>
+    
+    <body>
+        <div id="report-loading" class="loading">
+            <div id="progressbar" class="progress progress-striped active">
+                <div class="bar" style="width: 100%;">Please be patient... Loading data from Facebook.</div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="page-header">
+                
+<h1 style="font-family: 'Cedarville Cursive', cursive; cursor:pointer" onclick="location.href='/'">Curvy Friends</h1>
+
+            </div>
+            <div class="alert alert-error" id="noFriend" style="display:none;">
+<a class="close" data-dismiss="alert">×</a> 
+<strong>Error:</strong> You must select a friend.</div>
+            <div class="alert alert-error" id="generalError" style="display:none;">
+<a class="close" data-dismiss="alert">×</a> 
+<strong>Error:</strong> Something went wrong.</div>
+            <div class="row" id="chooseUser">
+                <div class="span5 offset1" style="text-align:center">
+                    <img src="../resources/img/homepage.jpg">
+                    <p>
+                        <h2>Welcome to Curvy Friends!</h2>
+                    </p>
+                    <p>
+                        <h4>The simple web application that helps you analyze your Facebook Friendships.</h4>
+                    </p>
+                </div>
+                <div class="span3 offset1" style="text-align:center">
+                    <br />
+                    <br />
+                    <br />
+                    
+<h5>
+We take the data you gave Facebook and use it to create a humorous graph for you and your friends to laugh about.
+</h5>
+
+                    
+<h6>
+Disclaimer: We take no responsibility for broken friendships.
+</h6>
+
+                    <p>
+                        
+<h4>Pick your friend and hit submit:</h4>
+
+                    </p>
+                    <p>
+                        <select id="e1">
+                            <option value="" selected="selected">Select Friend</option>
+                        </select>
+                        <button type="button" class="btn" id="submit">Submit</button>
+                    </p>
+                </div>
+            </div>
+            <div class="row" id="picture_area" style="display: none;"></div>
+            <div class="row" id="chart_area" style="display: none;text-align:center;">
+                <br/>
+                <div style="position:relative;height:400px;padding:5px;">
+                    <div id="chart_wrapper" style="width:100%;overflow-x:scroll;z-index: 2; position: absolute;">
+                    </div>
+                </div>
+                <div class="alert" style="text-align: center;">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+<strong>Note:</strong> Data past a certain time period may not be represented due to Facebook's API Restrictions.</div>
+                <div class="span2 offset2 lead">View Graph:</div>
+                <div class="span8">
+                    <div class="btn-group" data-toggle="buttons-radio" id="graphSelection">
+                        <!--<button type="button" class="btn disabled btn-info" id="post">Posts</button>-->
+                        <button type="button" class="btn active" id="post">Posts</button>
+                        <button type="button" class="btn" id="comment">Comments</button>
+                        <button type="button" class="btn" id="interaction">All Interaction</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+        <br />
+        <br />
+        <br />
+        <hr>
+        <footer class="offset1">
+            <p>Created by Eric Lui, Jonathan Yeung, Kevin Sito, and Hui Chen Puah at the University of Waterloo Facebook Hackathon 2013.</p>
+        </footer>
+        <script src="../resources/js/jquery-1.9.1.min.js"></script>
+        <script src="../resources/plugin/bootstrap/js/bootstrap.js"></script>
+        <script src="../resources/js/client.js"></script>
+        <script src="../resources/js/raphael-min.js"></script>
+        <script src="../resources/js/g.raphael-min.js"></script>
+        <script src="../resources/js/g.line-min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                fillDropDown();
+            });
+
+            $("#post").click(function(){
+                loadPosts();
+            });
+
+            $("#comment").click(function(){
+                loadComments();
+            });
+        </script>
+    </body>
+
+</html>

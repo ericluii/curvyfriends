@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<title>Curvy Friends</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<!-- JAVASCRIPT MOVED IT UP HERE FOR LOADING -->
+<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+
+<!-- ONCE THE DOCUMENT LOADS -->
+<script type="text/javascript">
+	jQuery(window).load(function(){
+	jQuery('#loading').fadeOut(3000);
+	});
+</script>
+<!-- Le styles -->
+<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+<style type="text/css">
+body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+.sidebar-nav {
+padding: 9px 0;
+}
+
+<!-- STYLING FOR THAT LOADING.GIF -->
+#loading {
+background:#000 url(loading.gif) no-repeat center center;
+height: 200px;
+width: 200x;
+position: fixed;
+left: 50%;
+top: 50%;
+margin: -25px 0 0 -25px;
+z-index: 1000;
+}
+</style>
+<link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+
+<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+
+<!-- Fav and touch icons -->
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="bootstrap/ico/apple-touch-icon-144-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="bootstrap/ico/apple-touch-icon-114-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="bootstrap/ico/apple-touch-icon-72-precomposed.png">
+<link rel="apple-touch-icon-precomposed" href="bootstrap/ico/apple-touch-icon-57-precomposed.png">
+<link rel="shortcut icon" href="bootstrap/ico/favicon.png">
+
+<?php
+    
+    require 'facebook-php-sdk/src/facebook.php';
+    
+    // app id and app secret from here: https://developers.facebook.com/apps
+    $fb = new Facebook(array(
+                             'appId' => '188051731337789',
+                             'secret' => '901c0ec46e1d69eb2a0b28eb2ea2704f',
+                             ));
+    
+	$user = $fb->getUser();
+	if (!$user) { // if user has not authenticated your app
+        $params = array(
+                        'scope' => 'user_relationships,friends_relationships,read_stream',
+                        );
+        $login_url = $fb->getLoginUrl($params);
+        print '<script>top.location.href = "' . $login_url . '"</script>'; //redirect the user to the permissions dialog
+        exit();
+    }
+?>
+</head>
+
+<body>
+<!-- LOADING DIV -->
+<div id="loading"></div>
+<div class="container">
+<div class="page-header">
+<h1>Curvy Friends</h1>
+</div>
+<p class="lead">A simple web application for analyzing the quality of friendship between you and a Facebook friend.</p>
+<div class="row">
+    <div class="span2 offset2"><h3>
+<?php
+    $currentUser = $fb->api('/me?fields=name');
+    print $currentUser['name'] . "</h3></div><div class=\"span2\">";
+    print "<img src='https://graph.facebook.com/" . $user . "/picture?type=large'>";
+    print "</div><div class=\"span2\">";
+    print "<img src='https://graph.facebook.com/" . '508030442' . "/picture?type=large'></div>";
+    print "<div class=\"span2\"><h3>" . "Jerry Lao";
+?>
+        </h3>
+    </div>
+</div>
+<div class="row">
+    <div id="chart_div" style="width: 100%; height: 500px;"></div>
+</div>
+
+<hr>
+
+<footer>
+<p>Created by Eric Lui, Jonathan Yeung, Kevin Sito, and Hui Chen Puah at the University of Waterloo Facebook Hackathon 2013.</p>
+</footer>
+</div>
+
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+
+
+<script src="bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+$(function(){  // $(document).ready shorthand
+  $('#chart_div').hide();
+  });
+</script>
+
+
+
+
+<?php
+$friendToMeParam = array(
+                         'method' => 'fql.query',
+                         'query' => 'SELECT post_id, actor_id, created_time, message FROM stream WHERE message != "" AND source_id = me() AND actor_id = 508030442  LIMIT 5000',
+                         );
+$meToFriendsParam = array(
+                          'method' => 'fql.query',
+                          'query' => 'SELECT post_id, actor_id, target_id, created_time, message FROM stream WHERE message != "" AND source_id = 508030442 AND actor_id = me() AND created_time > 0 LIMIT 5000'
+                          );
+
+$friendsToMe = $fb->api($friendToMeParam);
+$meToFriends = $fb->api($meToFriendsParam);
+
+$friendsToMe = array_reverse($friendsToMe);
+$meToFriends = array_reverse($meToFriends);
+
+$friendsToMeArray = new ArrayObject($friendsToMe);
+$meToFriendsArray = new ArrayObject($meToFriends);
+
+$toMeIterator = $friendsToMeArray->getIterator();
+$fromMeIterator = $meToFriendsArray->getIterator();
+
+$currentDate = min($friendsToMe[0]['created_time'], $meToFriends[0]['created_time']);
+
+$toMeCounter = 0;
+$fromMeCounter = 0;
+$rangeIndex = 0;
+
+$graphData = array();
+
+while($toMeIterator->valid() || $fromMeIterator->valid()) {
+    if ($toMeIterator->valid()) {
+        $postDetailsToMe = $toMeIterator->current();
+    }
+    
+    if ($fromMeIterator->valid()) {
+        $postDetailsFromMe = $fromMeIterator->current();
+    }
+    
+    if ($toMeIterator->valid() && round(($postDetailsToMe['created_time'] - $currentDate) / 86400) <= 7) {
+        $toMeCounter++;
+        $toMeIterator->next();
+    }
+    
+    if ($fromMeIterator->valid() && round(($postDetailsFromMe['created_time'] - $currentDate) / 86400) <= 7) {
+        $fromMeCounter++;
+        $fromMeIterator->next();
+    }
+    
+    if ((!$toMeIterator->valid() || round(($postDetailsToMe['created_time'] - $currentDate) / 86400) > 7) && (!$fromMeIterator->valid() || round(($postDetailsFromMe['created_time'] - $currentDate) / 86400) > 7)) {
+        array_push($graphData, array('Week ' . $rangeIndex, $toMeCounter + $fromMeCounter, $toMeCounter, $fromMeCounter));
+        $rangeIndex++;
+        $toMeCounter = 0;
+        $fromMeCounter = 0;
+        $currentDate += 604800;
+    }
+}
+?>
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+google.load("visualization", "1", {packages:["corechart"]});
+google.setOnLoadCallback(drawChart);
+function drawChart() {
+    var data = google.visualization.arrayToDataTable([
+                                                     ['Week', 'Overall Posts', 'Jessica to', ' to Jessica'],
+                                                     <?php
+                                                     foreach ($graphData as $week) {
+                                                     print "['" . $week[0] . "', " . $week[1] . ", " . $week[2] . ", " . $week[3] . "],";
+                                                     }
+                                                     ?>
+                                                     ]);
+    
+    var options = {
+    title: 'Friendship Graph',
+    hAxis: {showTextEvery: 5},
+    legend: {position: 'in'}
+    };
+    
+    var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+    chart.draw(data, options);
+}
+</script>
+<script type="text/javascript">
+$(function(){  // $(document).ready shorthand
+  $('#chart_div').fadeIn(3000);
+  });
+</script>
+
+</body>
+</html>

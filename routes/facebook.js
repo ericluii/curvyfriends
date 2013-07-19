@@ -1,5 +1,4 @@
 var https = require('https');
-var fql = require('fql');
 /*
  * GET Facebook Data
  */
